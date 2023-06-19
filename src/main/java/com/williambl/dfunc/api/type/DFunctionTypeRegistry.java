@@ -10,6 +10,8 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -18,6 +20,7 @@ import java.util.function.Function;
  * @param codec     the codec
  */
 public record DFunctionTypeRegistry<R>(Registry<DFunctionType<R, ?>> registry, Codec<DFunction<R>> codec) {
+    public static final Set<DFunctionTypeRegistry<?>> REGISTRIES = new HashSet<>();
     /**
      * Creates a new DFunctionTypeRegistry. If a codec is provided, then constant functions will be encoded with it as
      * just their value.
@@ -39,7 +42,9 @@ public record DFunctionTypeRegistry<R>(Registry<DFunctionType<R, ?>> registry, C
                                 ? Either.right(constantDFunction.apply(null))
                                 : Either.left(df));
 
-        return new DFunctionTypeRegistry<>(registry, codec);
+        final var reg = new DFunctionTypeRegistry<>(registry, codec);
+        REGISTRIES.add(reg);
+        return reg;
     }
 
     /**

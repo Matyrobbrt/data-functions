@@ -1,13 +1,18 @@
 package com.williambl.dfunc.impl;
 
 import com.mojang.serialization.Codec;
+import com.williambl.dfunc.api.DFunction;
 import com.williambl.dfunc.api.functions.*;
+import com.williambl.dfunc.impl.groovy.FunctionArithmetics;
+import com.williambl.dfunc.impl.groovy.GroovyFunction;
+import com.williambl.dfunc.impl.groovy.GroovyFunctionCompiler;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.advancements.critereon.BlockPredicate;
 import net.minecraft.advancements.critereon.EntityPredicate;
 import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,5 +37,22 @@ public final class DataFunctionsMod implements ModInitializer {
 		NumberDFunctions.init();
 		LevelDFunctions.init();
 		DamageSourceDFunctions.init();
+
+		final GroovyFunctionCompiler<Boolean> predicateCompiler = new GroovyFunctionCompiler<>(
+				DFunction.PREDICATE,
+				new FunctionArithmetics() {
+					@Override
+					public @Nullable GroovyFunction equalsTo(GroovyFunction function, Object other) {
+						return other instanceof Number number ? GroovyFunction.of(
+								"type", "dfunc:comparison",
+								"a", function.parameters,
+								"b", number,
+								"comparison","=="
+						) : null;
+					}
+				}
+		);
+		System.out.println(predicateCompiler.compile("dfunc.health() == 5").type());
+		System.exit(0);
 	}
 }
